@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Лента друзей
+{% endblock %}
+
+{% block content %}
+  <h1>Лента друзей</h1>
+  {% include 'posts/includes/switcher.html' %}
+
+  {% for post in page_obj %}
+    {% include 'posts/includes/post_list.html' %}
+  {% endfor %}
+
+  {% include 'posts/includes/paginator.html' %}
+
+{% endblock %}

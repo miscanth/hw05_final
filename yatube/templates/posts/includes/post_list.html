@@ -1,0 +1,31 @@
+{% load static %}
+{% load thumbnail %}
+{% block css %}
+{% endblock %}
+{% load user_filters %}
+
+<article>
+    <ul>
+      <li>
+        Автор: {{ post.author.get_full_name }}
+        <a href="{% url 'posts:profile' post.author %}">все посты пользователя</a>
+      </li>
+      <li>
+        Дата публикации: {{ post.pub_date|date:'d E Y' }}
+      </li>
+    </ul>
+    {% thumbnail post.image "960x550" crop="center" upscale=True as im %}
+      <img class="card-img my-2" src="{{ im.url }}">
+    {% endthumbnail %}
+    <p>{{ post.text|truncatechars:350 }}</p>
+    <a href="{% url 'posts:post_detail' post.pk %}">подробная информация </a>
+    <p>
+      {% if post.comments.count > 0 %}
+        <a href="{% url 'posts:add_comment' post.pk %}">комментарии ({{ post.comments.count }})</a>
+      {% endif %}
+    </p>
+      {% if post.group %}
+        <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
+      {% endif %}
+    {% if not forloop.last %}<hr>{% endif %}
+ </article>

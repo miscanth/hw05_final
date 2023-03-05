@@ -1,0 +1,14 @@
+<div class="container">
+  <h3>Поиск по записям</h3>
+    <div class="card">
+      <div class="card-body">
+        <form class="form-inline" action="/">
+          <div class="form-row">
+          <input name="q" class="form-control form-control-lg" type="search" 
+            placeholder="Поиск" {% if keyword %}value="{{ keyword }}"{% endif %}>
+          <button class="btn" type="submit">Найти</button>
+          </div>
+        </form>
+      </div>
+    </div>
+</div>
