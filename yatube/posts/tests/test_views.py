@@ -508,11 +508,11 @@ class PostViewTest(TestCase):
         # Возьмём для проверки третьего пользователя,
         # который не подписан на автора
         # Возможно он даже был ранее подписан, но уже отписался
-        self.unfollow = Follow.objects.create(
+        """self.unfollow = Follow.objects.create(
             user=self.another_user,
             author=self.author_user,
             is_deleted=True,
-        )
+        )"""
         # Авторизуем этого пользователя
         self.authorized_client.force_login(self.another_user)
         # Проверяем, что новый пост автора не пояляется

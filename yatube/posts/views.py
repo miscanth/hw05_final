@@ -102,18 +102,7 @@ def follow_index(request):
     """Страница просмотра постов авторов,
     на которых подписан текущий пользователь.
     """
-    followings = Follow.objects.select_related('author').filter(
-        user=request.user, is_deleted=False
-    )
-    posts = []
-    for following in followings:
-        for post in Post.objects.select_related('author').filter(
-            author=following.author
-        ):
-            posts.append(post)
-            # Сортировка постов авторов, на которых подписан
-            # текущий пользователь, по дате публикации
-            posts = sorted(posts, key=lambda post: post.pub_date, reverse=True)
+    posts = Post.objects.filter(author__following__user=request.user)
     page_obj = paginate(posts, request)
     context = {
         'page_obj': page_obj,
@@ -126,21 +115,10 @@ def profile_follow(request, username):
     # Подписаться на автора
     following = get_object_or_404(User, username=username)
     if request.user.username != username:
-        if not Follow.objects.filter(
+        Follow.objects.get_or_create(
             user=request.user,
-            author=following,
-        ).exists():
-            Follow.objects.create(
-                user=request.user,
-                author=following,
-            )
-        else:
-            follow = Follow.objects.get(
-                user=request.user,
-                author=following,
-            )
-            setattr(follow, 'is_deleted', False)
-            follow.save()
+            author=following
+        )
         return redirect('posts:profile', username=username)
     return redirect('posts:profile', username=username)
 
@@ -150,20 +128,12 @@ def profile_unfollow(request, username):
     # Дизлайк, отписка
     following_author = get_object_or_404(User, username=username)
     if request.user.username != username:
-        if Follow.objects.filter(
+        follow = Follow.objects.filter(
             user=request.user,
             author=following_author,
-        ).exists():
-            follow = Follow.objects.get(
-                user=request.user,
-                author=following_author,
-            )
-            setattr(follow, 'is_deleted', True)
-            # тесты из репозитория не обойти, используя soft delete,
-            # поэтому напрямую удаляю объект Follow при отписке
-            """follow.save()"""
+        ).first()
+        if follow:
             follow.delete()
-        return redirect('posts:profile', username=username)
     return redirect('posts:profile', username=username)
 
 
@@ -172,18 +142,13 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group')
     page_obj = paginate(posts, request)
-    if request.user.is_authenticated:
-        if request.user.username != username and not Follow.objects.filter(
-                user=request.user,
-                author=author,
-                is_deleted=False,
-        ).exists():
-            following = False
-        else:
-            following = True
+    if request.user.is_authenticated and Follow.objects.filter(
+        user=request.user,
+        author=request.user,
+    ).exists():
+        following = False
     else:
-        following = None
-
+        following = True
     followers = Follow.objects.filter(author=author, is_deleted=False)
     followers_count = followers.count()
     context = {
