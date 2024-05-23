@@ -144,7 +144,7 @@ def profile(request, username):
     page_obj = paginate(posts, request)
     following = request.user.is_authenticated and Follow.objects.filter(
         user=request.user,
-        author=request.user,
+        author=author,
     ).exists()
     followers = Follow.objects.filter(author=author, is_deleted=False)
     followers_count = followers.count()
